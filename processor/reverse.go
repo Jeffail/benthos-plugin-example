@@ -1,14 +1,17 @@
 package processor
 
 import (
+	"bytes"
 	"context"
 
 	"github.com/Jeffail/benthos/v3/public/x/service"
 )
 
 func init() {
-	constructor := func(conf interface{}, mgr *service.Resources) (service.Processor, error) {
-		return &reverseProcessor{}, nil
+	constructor := func(conf *service.ParsedConfig, mgr *service.Resources) (service.Processor, error) {
+		return &reverseProcessor{
+			logger: mgr.Logger(),
+		}, nil
 	}
 
 	err := service.RegisterProcessor("reverse", service.NewConfigSpec(), constructor)
@@ -19,7 +22,9 @@ func init() {
 
 //------------------------------------------------------------------------------
 
-type reverseProcessor struct{}
+type reverseProcessor struct {
+	logger *service.Logger
+}
 
 func (r *reverseProcessor) Process(ctx context.Context, m *service.Message) ([]*service.Message, error) {
 	bytesContent, err := m.AsBytes()
@@ -30,6 +35,10 @@ func (r *reverseProcessor) Process(ctx context.Context, m *service.Message) ([]*
 	newBytes := make([]byte, len(bytesContent))
 	for i, b := range bytesContent {
 		newBytes[len(newBytes)-i-1] = b
+	}
+
+	if bytes.Compare(newBytes, bytesContent) == 0 {
+		r.logger.Infof("Woah! This is like totally a palindrome: %s", bytesContent)
 	}
 
 	m.SetBytes(newBytes)

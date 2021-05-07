@@ -14,14 +14,14 @@ func init() {
 		MaxDuration string `yaml:"maximum_duration"`
 	}
 
-	configSpec := service.NewConfigSpec().WithConstructor(func() interface{} {
+	configSpec := service.NewStructConfigSpec(func() interface{} {
 		return &randomRLConfig{
 			MaxDuration: "1s",
 		}
 	})
 
-	constructor := func(conf interface{}, mgr *service.Resources) (service.RateLimit, error) {
-		c := conf.(*randomRLConfig)
+	constructor := func(conf *service.ParsedConfig, mgr *service.Resources) (service.RateLimit, error) {
+		c := conf.AsStruct().(*randomRLConfig)
 		maxDuration, err := time.ParseDuration(c.MaxDuration)
 		if err != nil {
 			return nil, fmt.Errorf("invalid max duration: %w", err)

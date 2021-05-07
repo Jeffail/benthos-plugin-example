@@ -1,8 +1,5 @@
 module github.com/benthosdev/benthos-plugin-example
 
-require (
-	github.com/Jeffail/benthos/v3 v3.45.2-0.20210429192737-403fa6686ce3
-	github.com/Jeffail/gabs/v2 v2.6.0
-)
+require github.com/Jeffail/benthos/v3 v3.46.1-0.20210506204107-f68d0cc9c9cc
 
 go 1.13

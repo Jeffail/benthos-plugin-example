@@ -14,17 +14,19 @@ func init() {
 		MaxSize int `yaml:"max_size"`
 	}
 
-	confSpec := service.NewConfigSpec().WithConstructor(func() interface{} {
+	confSpec := service.NewStructConfigSpec(func() interface{} {
 		conf := lossyCacheConfig{
 			MaxSize: 0,
 		}
 		return &conf
 	})
 
-	err := service.RegisterCache("lossy_memory", confSpec, func(iconf interface{}, mgr *service.Resources) (service.Cache, error) {
-		conf := iconf.(*lossyCacheConfig)
-		return newLossyMemory(conf.MaxSize)
-	})
+	err := service.RegisterCache(
+		"lossy_memory", confSpec,
+		func(iconf *service.ParsedConfig, mgr *service.Resources) (service.Cache, error) {
+			conf := iconf.AsStruct().(*lossyCacheConfig)
+			return newLossyMemory(conf.MaxSize, mgr.Metrics())
+		})
 	if err != nil {
 		panic(err)
 	}
@@ -36,11 +38,17 @@ type lossyMemory struct {
 	cap   int
 	items map[string][]byte
 
+	mDropped *service.MetricCounter
+
 	sync.RWMutex
 }
 
-func newLossyMemory(cap int) (service.Cache, error) {
-	return &lossyMemory{cap: cap, items: map[string][]byte{}}, nil
+func newLossyMemory(cap int, metrics *service.Metrics) (service.Cache, error) {
+	return &lossyMemory{
+		cap:      cap,
+		items:    map[string][]byte{},
+		mDropped: metrics.NewCounter("dropped.just.cus"),
+	}, nil
 }
 
 func (m *lossyMemory) Get(ctx context.Context, key string) ([]byte, error) {
@@ -56,6 +64,7 @@ func (m *lossyMemory) Get(ctx context.Context, key string) ([]byte, error) {
 func (m *lossyMemory) Set(ctx context.Context, key string, value []byte, ttl *time.Duration) error {
 	if rand.Int()%7 == 0 {
 		// Ooops!
+		m.mDropped.Incr(1)
 		return nil
 	}
 	m.Lock()
@@ -80,6 +89,7 @@ func (m *lossyMemory) Add(ctx context.Context, key string, value []byte, ttl *ti
 	}
 	if rand.Int()%7 == 0 {
 		// Ooops!
+		m.mDropped.Incr(1)
 		return nil
 	}
 	m.items[key] = value

@@ -10,7 +10,7 @@ import (
 func init() {
 	err := service.RegisterOutput(
 		"blue_stdout", service.NewConfigSpec(),
-		func(conf interface{}, mgr *service.Resources) (out service.Output, maxInFlight int, err error) {
+		func(conf *service.ParsedConfig, mgr *service.Resources) (out service.Output, maxInFlight int, err error) {
 			return &blueOutput{}, 1, nil
 		})
 	if err != nil {

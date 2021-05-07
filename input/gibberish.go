@@ -12,14 +12,14 @@ func init() {
 		Length int `yaml:"length"`
 	}
 
-	configSpec := service.NewConfigSpec().WithConstructor(func() interface{} {
+	configSpec := service.NewStructConfigSpec(func() interface{} {
 		return &gibberishConfig{
 			Length: 100,
 		}
 	})
 
-	constructor := func(conf interface{}, mgr *service.Resources) (service.Input, error) {
-		gconf := conf.(*gibberishConfig)
+	constructor := func(conf *service.ParsedConfig, mgr *service.Resources) (service.Input, error) {
+		gconf := conf.AsStruct().(*gibberishConfig)
 		return &gibberishInput{gconf.Length}, nil
 	}
 
