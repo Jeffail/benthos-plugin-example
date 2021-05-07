@@ -37,7 +37,7 @@ func (r *reverseProcessor) Process(ctx context.Context, m *service.Message) ([]*
 		newBytes[len(newBytes)-i-1] = b
 	}
 
-	if bytes.Compare(newBytes, bytesContent) == 0 {
+	if bytes.Equal(newBytes, bytesContent) {
 		r.logger.Infof("Woah! This is like totally a palindrome: %s", bytesContent)
 	}
 
