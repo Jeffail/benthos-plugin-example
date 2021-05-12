@@ -59,21 +59,20 @@ For example, to use the example plugin components `gibberish`, `reverse` and `bl
 
 ```yaml
 input:
-  type: gibberish
-  plugin:
+  gibberish:
     length: 80
 
 pipeline:
   processors:
   - throttle:
       period: 1s
-  - type: reverse
+  - reverse: {}
   - bloblang: |
       root.gibberish = content()
       root.more_stuff = crazy_object(10).into_object("foo")
 
 output:
-  type: blue_stdout
+  blue_stdout: {}
 ```
 
 And you can run it like this:

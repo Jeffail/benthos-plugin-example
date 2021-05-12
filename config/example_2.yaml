@@ -1,6 +1,5 @@
 input:
-  type: gibberish
-  plugin:
+  gibberish:
     length: 10
 
 pipeline:
@@ -12,4 +11,4 @@ pipeline:
       period: 1s
 
 output:
-  type: blue_stdout
+  blue_stdout: {}
